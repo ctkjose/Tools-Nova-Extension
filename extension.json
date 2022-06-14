@@ -5,6 +5,8 @@
     "description": "Adds a sidebar that lets you create and access quick scripts to automate tasks with ease!",
     "version": "1.0",
     "repository": "https://github.com/ctkjose/Tools-Nova-Extension",
+    "bugs":"https://github.com/ctkjose/Tools-Nova-Extension/issues",
+    "min_runtime": "9.0",
     "categories": ["sidebars"],
     
     "main": "main.js",
