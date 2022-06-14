@@ -6,7 +6,7 @@ Tools are vanilla js scripts that are saved in the folder `~/Library/Application
 
 # Usage #
 
-This extensions add a new sidebar that you can access from the sidebar panel in Nova. The sidebar will list all the tools that you create or install. A tool is a vanilla js script that you can use to automate tasks in Nova. The sidebar will show a basic set of icon on its tool bar to add, edit and refresh your tools.
+This extensions add a new sidebar that you can access from the sidebar panel in Nova. The sidebar will list all the tools that you create or install. A tool is a vanilla js script that you can use to automate tasks in Nova. The sidebar will show a basic set of icons on its tool bar to add, edit and refresh your tools.
 
 ## Create a Tool ##
 
@@ -203,10 +203,10 @@ onSave: function(path, editor){
 
 ### Notes ###
 
-1. Nova's [path](https://docs.nova.app/api-reference/path/) object is available in your script as `path`. For example:
+1. Use Nova's [path](https://docs.nova.app/api-reference/path/) object to manipulate paths. For example:
 ```js
 onAction:function(){
-	let filePath = path.join(path1, dirName, "file.js");
+	let filePath = nova.path.join(path1, dirName, "file.js");
 }
 ```
 

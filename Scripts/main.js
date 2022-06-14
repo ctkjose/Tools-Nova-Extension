@@ -190,7 +190,7 @@ var exwTools = {
 			
 			if(tool.onAction && (typeof(tool.onAction) == 'function')){
 				ideTool.onAction = function(){
-					let path = nova.path;
+					
 					
 					helper.file_path = null;
 					helper.file_name = null;
@@ -210,8 +210,6 @@ var exwTools = {
 			}
 			if(tool.onSave && (typeof(tool.onSave) == 'function')){
 				ideTool.onSave = function(apath, editor){
-					
-					let path = nova.path;
 					
 					helper.file_path = apath;
 					helper.file_name = null;
