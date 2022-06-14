@@ -2,8 +2,9 @@
     "identifier": "EXPW.Tools",
     "name": "Tools",
     "organization": "ExponentialWorks",
-    "description": "Adds sidebar that lets you create and access quick scripts to automate tasks with ease!",
+    "description": "Adds a sidebar that lets you create and access quick scripts to automate tasks with ease!",
     "version": "1.0",
+    "repository": "https://github.com/ctkjose/Tools-Nova-Extension",
     "categories": ["sidebars"],
     
     "main": "main.js",
