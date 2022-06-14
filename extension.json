@@ -1,0 +1,67 @@
+{
+    "identifier": "EXPW.Tools",
+    "name": "Tools",
+    "organization": "ExponentialWorks",
+    "description": "Adds sidebar that lets you create and access quick scripts to automate tasks with ease!",
+    "version": "1.0",
+    "categories": ["sidebars"],
+    
+    "main": "main.js",
+    
+    "entitlements": {
+        "clipboard": true, "filesystem": "readwrite", "process": true, "requests": true
+    },
+    
+    "sidebars": [
+        {
+            "id": "expw_tools",
+            "name": "Tools",
+            "smallImage": "folder-small",
+            "smallSelectedImage": "folder-small",
+            "largeImage": "folder",
+            "largeSelectedImage": "folder",
+            "sections": [
+                {
+                    "id": "expw_tools",
+                    "name": "Tools",
+                    "allowMultiple": false,
+                    "placeholderText": "No profiles have been created.",
+                    "placeholderImage": "mysidebar-placeholder",
+                    "headerCommands": [
+                        {
+                            "title": "Add",
+                            "image": "__builtin.add",
+                            "tooltip": "Add a new tool script...",
+                            "command": "expw_tools.add"
+                        },
+                        {
+                            "title": "Reload",
+                            "image": "__builtin.refresh",
+                            "tooltip": "Reload tools...",
+                            "command": "expw_tools.reload"
+                        },
+                        {
+                            "title": "Edit",
+                            "image": "pencil",
+                            "tooltip": "Edit tool...",
+                            "command": "expw_tools.edit",
+                            "when": "viewItem == 'tool'"
+                        }
+                    ],
+                    "contextCommands": [
+                        {
+                            "title": "Edit",
+                            "command": "expw_tools.edit",
+                            "when": "viewItem == 'tool'"
+                        },
+                        {
+                            "title": "Show in Finder",
+                            "command": "expw_tools.showInFinder",
+                            "when": "viewItem == 'tool'"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
