@@ -10,8 +10,13 @@ exports.getConfig = function (key, type) {
 }
 exports.readFile = function(path){
 	if (!nova.fs.access(path, nova.fs.R_OK)) return null
-	const lines = nova.fs.open(path).readlines();
-	return lines.length > 0 ? lines.join('\n') : null
+	try {
+		const lines = nova.fs.open(path).readlines();
+		return lines.length > 0 ? lines.join('\n') : null
+	}catch(ex){
+		console.log("[EXPW][TOOLS] ERROR failed to read \"%s\".", path);
+		return "";
+	}
 }
 exports.isPathOpen = function (path, workspace) {
 	workspace = workspace || nova.workspace;

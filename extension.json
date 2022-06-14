@@ -6,7 +6,6 @@
     "version": "1.0",
     "repository": "https://github.com/ctkjose/Tools-Nova-Extension",
     "bugs":"https://github.com/ctkjose/Tools-Nova-Extension/issues",
-    "min_runtime": "9.0",
     "categories": ["sidebars"],
     
     "main": "main.js",

@@ -10,7 +10,7 @@ const helper = require('./lib/helper');
 exports.activate = function() {
     // Do work when the extension is activated
     
-	exwTools.init();
+	exwTools.init(); 
 	
 	/*
     // Create the TreeView
@@ -311,8 +311,11 @@ var exwTools = {
 			if(e.contextValue == "tool"){
 				this.toolRun(e.__uid);
 			}else if(e.contextValue == "cmd_reveal_tools"){
-				const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", this.pathScripts]});
-				p.start();
+				try{
+					const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", this.pathScripts]});
+					p.start();
+				}catch(err){
+				}
 			}
 		});
 		
@@ -339,8 +342,12 @@ var exwTools = {
 			const e = selection[0];
 			
 			if(e.contextValue == "tool"){
-				const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", e.__source_path]});
-				p.start();
+				try {
+					const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", e.__source_path]});
+					p.start();
+				}catch(err){
+
+				}
 				//nova.fs.reveal(e.__source_path); //leaves finder in a weird states
 			}
 		});
