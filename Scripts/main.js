@@ -75,6 +75,7 @@ var exwTools = {
 			return item;
 		}else if(element.identifier == "cmd_reveal_tools"){
 			item.image = "bolt";
+			item.command = "expw_tools.doubleClick";
 			item.contextValue = element.contextValue;
 			return item;
 		}
@@ -307,15 +308,11 @@ var exwTools = {
 			if(!selection || selection.length == 0) return;
 			
 			const e = selection[0];
-			
+			console.log("contextValue \"%s\".", e.contextValue);
 			if(e.contextValue == "tool"){
 				this.toolRun(e.__uid);
 			}else if(e.contextValue == "cmd_reveal_tools"){
-				try{
-					const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", this.pathScripts]});
-					p.start();
-				}catch(err){
-				}
+				helper.revealInFinder(this.pathScripts);
 			}
 		});
 		
@@ -342,12 +339,7 @@ var exwTools = {
 			const e = selection[0];
 			
 			if(e.contextValue == "tool"){
-				try {
-					const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", e.__source_path]});
-					p.start();
-				}catch(err){
-
-				}
+				helper.revealInFinder(e.__source_path);
 				//nova.fs.reveal(e.__source_path); //leaves finder in a weird states
 			}
 		});

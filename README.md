@@ -1,3 +1,4 @@
+# Tools #
 
 **Tools** adds a repository of quick commands to automate tasks. Similar to Nova's Tasks but in **Tools** you can create simple js scripts and have them handy in a Sidebar. Tools are not associated to a workspace/project like tasks, nor are they tied to a build-run cycle, they are simple scripts that you can run as needed.
 
@@ -42,7 +43,7 @@ name: "Hello World",
 The following properties are available in the tool object:
 
 | Key | Description |
-| -- | -- |
+| --- | --- |
 | id | String, A unique identifier for your tool. |
 | name | String, A human readable name for the tool. |
 | onAction | Function, A hook that will be executed when the user double clicks on the tool or it is executed from a menu.<br><br>Parameters: none. |
@@ -72,6 +73,11 @@ String with the file name of the active editor or file in scope.
 `helper.file_extension`
 
 String with the file extension of the active editor or file in scope.
+
+
+`helper.revealInFinder( aPath )`
+
+Reveals the file or folder given in `aPath`.
 
 `helper.readFile( aPath )`
 
@@ -118,19 +124,6 @@ Insert the string given in `text` in the current insertion point as a [snippet](
 
 Save the text editor contents. 
 
-
-
-`helper.shell.execute(command, args)`
-
-Execute `command` in a shell with the arguments in the array `args` (string array). Returns the output of the command. The command is executed synchronously.
-
-Use `helper.shell.cwd` to set the current working directory. If not specified the cwd will the the path of the current active document, else the path of the current workspace, else the home folder of the user.
-
-```JS
-var out = helper.shell.execute("ls", ["-la", path]);
-```
-
-
 `helper.process(cmd, args)`
 
 Creates a process in a shell for the `command` with the arguments in the array `args` (string array).
@@ -138,7 +131,7 @@ Creates a process in a shell for the `command` with the arguments in the array `
 The process is an event emitter with the following events:
 
 | Event | Description |
-| -- | -- |
+| --- | --- |
 | `close` | The `close` event is emitted after a process has ended and the stdio streams of a child process have been closed. Arguments:<br>`code` number The exit code if the child exited on its own. |
 | `error` | The `error` event is emitted whenever an error occurred. Arguments:<br>`code` number The exit code if the child exited on its own. |
 | `data` | The 'data' event is emitted whenever data from StdOut is available. Arguments:<br>`data` string. |
@@ -147,7 +140,7 @@ The process is an event emitter with the following events:
 Methods:
 
 | Method | Description |
-| -- | -- |
+| --- | --- |
 | `subprocess.run()` | Executes the process asynchronously. Returns a promise. |
 | `subprocess.kill([signal])` | The subprocess.kill() method sends a signal to the child process. If no argument is given, the process will be sent the 'SIGKILL' signal. Available signals are 'SIGINT', 'SIGTERM', or 'SIGHUP'. |
 | `subprocess.terminate()` | Helper method to kill process with a 'SIGTERM' signal. |
@@ -157,7 +150,7 @@ Methods:
 Properties:
 
 | Method | Description |
-| -- | -- |
+| --- | --- |
 | `pid` | Readonly The process PID. |
 | `cwd` | The current working directory. Can be set anytime before you call `run()`. |
 | `shell` | If `true` then `/bin/sh` is used, else set to a string with the path to the desired shell. Can be set anytime before you call `run()`. |

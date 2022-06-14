@@ -3,7 +3,14 @@ Helper Utilities to interact with Nova
 
 **/
 
-
+exports.revealInFinder = function(path){
+	try {
+		const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", path]});
+		p.start();
+	}catch(err){
+		console.log("[EXPW][TOOLS][ERROR] Unable to reveal \"%s\".", path);
+	}
+}
 exports.getConfig = function (key, type) {
 	if(nova.workspace.config.get(key) != null) return nova.workspace.config.get(key, type);
 	return nova.config.get(key, type)
