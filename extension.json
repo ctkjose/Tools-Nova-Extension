@@ -3,7 +3,7 @@
     "name": "Tools",
     "organization": "ExponentialWorks",
     "description": "Adds a sidebar that lets you create and access quick scripts to automate tasks with ease!",
-    "version": "1.1",
+    "version": "1.2",
     "repository": "https://github.com/ctkjose/Tools-Nova-Extension",
     "bugs":"https://github.com/ctkjose/Tools-Nova-Extension/issues",
     "categories": ["sidebars"],
