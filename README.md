@@ -35,7 +35,7 @@ Markers use the syntax of single line comments for the given source code languag
 /* #MARK My comment here... */
 ```
 
-![A screenshot](images/screenshot.png)
+![A screenshot](https://raw.githubusercontent.com/ctkjose/Tools-Nova-Extension/main/Images/screenshot.png)
 
 
 **NOTE**
