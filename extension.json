@@ -16,7 +16,7 @@
     
     "sidebars": [
         {
-            "id": "expw_tools",
+            "id": "expw_prj",
             "name": "Tools",
             "smallImage": "folder-small",
             "smallSelectedImage": "folder-small",
@@ -24,7 +24,7 @@
             "largeSelectedImage": "folder",
             "sections": [
                 {
-                    "id": "expw_tools",
+                    "id": "expw_prj",
                     "name": "Tools",
                     "allowMultiple": false,
                     "placeholderText": "No profiles have been created.",
@@ -33,34 +33,62 @@
                         {
                             "title": "Add",
                             "image": "__builtin.add",
-                            "tooltip": "Add a new tool script...",
-                            "command": "expw_tools.add"
+                            "tooltip": "Add a new...",
+                            "command": "expw_prj.add",
+                            "when": "(viewItem == 'fld_tools') || (viewItem == 'fld_projects') || (viewItem == 'fld_act_project') || (viewItem == 'fsd')"
                         },
                         {
                             "title": "Reload",
                             "image": "__builtin.refresh",
                             "tooltip": "Reload tools...",
-                            "command": "expw_tools.reload"
+                            "command": "expw_prj.reload"
                         },
                         {
                             "title": "Edit",
                             "image": "pencil",
                             "tooltip": "Edit tool...",
-                            "command": "expw_tools.edit",
-                            "when": "viewItem == 'tool'"
+                            "command": "expw_prj.edit",
+                            "when": "(viewItem == 'tool') || (viewItem == 'fs')"
                         }
                     ],
                     "contextCommands": [
                         {
                             "title": "Edit",
-                            "command": "expw_tools.edit",
-                            "when": "viewItem == 'tool'"
+                            "command": "expw_prj.edit",
+                            "when": "(viewItem == 'tool') || (viewItem == 'fs')"
                         },
                         {
                             "title": "Show in Finder",
-                            "command": "expw_tools.showInFinder",
-                            "when": "viewItem == 'tool'"
+                            "command": "expw_prj.showInFinder",
+                            "when": "(viewItem == 'tool') || (viewItem == 'fs') || (viewItem == 'fsd')"
+                        },
+                        {
+                            "title": "Copy Path",
+                            "command": "expw_prj.copyPath",
+                            "when": "(viewItem == 'tool') || (viewItem == 'fs') || (viewItem == 'fsd')"
+                        },
+                        {
+                            "title": "New File",
+                            "command": "expw_prj.newFile",
+                            "when": "(viewItem == 'fsd')"
+                        },
+                        {"separator": true},
+                        {
+                            "title": "New project...",
+                            "command": "expw_prj.newProject",
+                            "when": "(viewItem == 'fld_projects')"
+                        },
+                        {
+                            "title": "Open project...",
+                            "command": "expw_prj.openProject",
+                            "when": "(viewItem == 'fld_projects')"
+                        },
+                        {
+                            "title": "Add path to project...",
+                            "command": "expw_prj.addPathToProject",
+                            "when": "(viewItem == 'fld_act_project')"
                         }
+                        
                     ]
                 }
             ]

@@ -1,260 +1,96 @@
 
 var treeView = null;
 
-function replaceAll(string, search, replace) {
+
+String.prototype.replaceAll = function(search, replace) {
+	var string = this.toString(this);
  	return string.split(search).join(replace);
 }
 
-const helper = require('./lib/helper'); 
+//const helper = require('./lib/helper'); 
+//const ide = helper.ide;
+const { ide } = require('./lib/helper');
+
+
 
 exports.activate = function() {
     // Do work when the extension is activated
     
-	exwTools.init(); 
-	
-	/*
-    // Create the TreeView
-    treeView = new TreeView("mysidebar", {
-        dataProvider: new FruitDataProvider()
-    });
-    
-    treeView.onDidChangeSelection((selection) => {
-        // console.log("New selection: " + selection.map((e) => e.name));
-    });
-    
-    treeView.onDidExpandElement((element) => {
-        // console.log("Expanded: " + element.name);
-    });
-    
-    treeView.onDidCollapseElement((element) => {
-        // console.log("Collapsed: " + element.name);
-    });
-    
-    treeView.onDidChangeVisibility(() => {
-        // console.log("Visibility Changed");
-    });
-    */
-	
-    // TreeView implements the Disposable interface
-    //nova.subscriptions.add(treeView);
+	plugin.init();
 }
 
 exports.deactivate = function() {
-   exwTools.disposables.dispose(); //like in atom
+   ide.dispose();
 }
 
-
-
-
+/*
+Object.defineProperty(global, '__file', {
+  get: function(){
+	return "jose";
+  }
+});
+*/
 
 
 var pStore = nova.extension.globalStoragePath;
 //nova.workspace.showInformativeMessage("alive=" + pStore);
-var exwTools = {
+var plugin = {
 	rootItems: [],
-	pathScripts: "",
+
 	tree:null,
 	disposables:null,
 	_editingTool:null,
-	tools: {
-		_isVirgin: true,
-		items: null,
-		hooks: {
-			onSave: []
-		},
-	},
-	getTreeItem(element) {
+	
+	symController:null,
+	scriptsController:null,
+	prjController:null,
+	
+	getTreeItem(entry) {
 		// Converts an element into its display (TreeItem) representation
-		let item = new TreeItem(element.name);
-		item.tooltip = element.tooltip;
+		let item = new TreeItem(entry.name);
 		
-		if(element.identifier == "fld_tools"){
-			item.collapsibleState = TreeItemCollapsibleState.Expanded;
-			item.image = "folder-color";
-			item.contextValue = element.contextValue;
-			return item;
-		}else if(element.identifier == "cmd_reveal_tools"){
-			item.image = "bolt";
-			item.command = "expw_tools.doubleClick";
-			item.contextValue = element.contextValue;
-			return item;
+		item.identifier = entry.uid;
+		item.contextValue = entry.type;
+		
+		if(entry.tooltip){
+			item.tooltip = entry.tooltip;
+		}
+		if(entry.icon){
+			item.image = entry.icon;
+		}
+		if(entry.hasOwnProperty("path") && entry.path){
+			item.path = entry.path;
 		}
 		
-		
-		item.image = "tool";
-		item.command = "expw_tools.doubleClick";
-		item.contextValue = element.contextValue;
+		if( entry.isFolder ){
+			
+			var folderState = TreeItemCollapsibleState.Collapsed;
+			
+			if(entry.hasOwnProperty("folderState")){
+				folderState = entry.folderState;
+			}else{
+				entry.folderState = folderState;
+			}
+			
+			item.collapsibleState = folderState;
+		}
+		if(entry.isActionable){
+			item.command = "expw_prj.doubleClick";
+		}
 		
 		return item;
 	},
-	getChildren(element) {
+	getChildren(entry) {
 		// Requests the children of an element
-		if (!element) {
-			return this.getRootItems();
-		}else if(element.identifier == "fld_tools"){
-			return this.getToolsItems();
-		}else {
-			return element.children;
-		}
-	},
-	getToolsItems: function(){
-		var out = [];
-		for([uid, tool] of this.tools.items){
-			out.push(tool);
-		}
-		return out;
-	},
-	getRootItems: function(){
-		var out = [];
-		
-		out.push( {
-			name:"Tools",
-			tooltip:"Tools...",
-			identifier:"fld_tools",
-			contextValue:'cmd_tools',
-
-		});
-		out.push( {
-			name:"Open tools folder",
-			tooltip:"Open tools folder...",
-			identifier:"cmd_reveal_tools",
-			contextValue:'cmd_reveal_tools',
-		});
-		return out;
-	},
-	
-	toolRun: function(uid, hook, ctxData){
-		
-		console.log("[EXW-TOOLS] UID=%s", uid);
-		if(!this.tools.items.has(uid)) return;
-		var tool = this.tools.items.get(uid);
-		
-		if(!hook)  hook = 'onAction';
-		
-		console.log("[EXW-TOOLS] Running tool %s with hook %s", uid, hook);
-		
-		if(tool.hasOwnProperty(hook) && (typeof(tool[hook]) == 'function')){
-			try{
-				tool[hook]();
-			}catch(err1){
-				console.error("[EXW-TOOLS] Tool \"%s\" failed.", tool.__uid);
-			}
-		}
-	},
-	toolAdd: function(file){
-		let tools = this.tools;
-		
-		const pathTool = file;
-		const fileName = nova.path.basename(file);
-		
-		const ext = fileName.substr(fileName.lastIndexOf('.') + 1);
-		if(ext != "js") return;
-		
-		var src = helper.readFile(pathTool);
-		if(!src) return;
-		
-		
-		var uid = replaceAll(replaceAll(fileName.replace('.js',''),' ','-'),'_','-').toLowerCase();
-		if(tools.hasOwnProperty(uid)){
-			let suid = uid;
-			var i = 1;
-			uid = suid + '-' + i.toString();
-			while(tools.hasOwnProperty(uid)){
-				i++;
-				uid = suid + '-' + i.toString();
+		if (!entry) {
+			return this.rootItems;
+		}else{
+			if( entry.isFolder && entry.controller ){
+				return entry.controller.onGetChildren(entry);
 			}
 		}
 		
-		//console.log("@toolAdd[%s]=%s",uid,  fileName); 
-		
-		var tool = null;
-		src = "tool = null;\n" + src;
-		try {
-			eval(src);
-		}catch(ex){
-			console.error('EXW TOOL Error running script! [ERR500] in file "%s".', pathTool);
-			return;
-		}
-		if(tool){
-			let s = tool.name ? tool.name : uid;
-			let tooltip = tool.tooltip ? tool.tooltip : null;
-			
-			var ideTool = {
-				__uid: uid, __source_path: pathTool, __source_file: fileName,
-				name:s,
-				tooltip:tooltip,
-				identifier:uid,
-				children: [],
-				contextValue:'tool',
-			};
-			
-			if(tool.onAction && (typeof(tool.onAction) == 'function')){
-				ideTool.onAction = function(){
-					
-					
-					helper.file_path = null;
-					helper.file_name = null;
-					helper.file_extension = null;
-					
-					let editor = nova.workspace.activeTextEditor;
-					if(editor && editor.document){
-						helper.file_path = editor.document.path;
-						helper.file_name = nova.path.basename(editor.document.path);
-						helper.file_extension = nova.path.extname(editor.document.path);
-					}
-					
-					tool.onAction();
-				};
-				
-				
-			}
-			if(tool.onSave && (typeof(tool.onSave) == 'function')){
-				ideTool.onSave = function(apath, editor){
-					
-					helper.file_path = apath;
-					helper.file_name = null;
-					helper.file_extension = null;
-					
-					if(apath){
-						helper.file_name = nova.path.basename(apath);
-						helper.file_extension = nova.path.extname(apath);
-					}
-					tool.onSave(apath, editor);
-				};
-				
-				
-			}
-			
-			
-			if(!this.tools.items.has(uid)){
-				this.toolInstall(uid);
-			}
-			
-			tools.items.set(uid,ideTool);
-		}
-		
-		
-		
-	},
-	toolInstall: function(tool){
-		if( tool.onSave ){
-			tools.hooks.onSave.push(tool.__uid);
-		}
-	
-		
-	},
-	loadTools: function(){
-		const paths = nova.fs.listdir(this.pathScripts);
-		for(var i=0; i<paths.length; i++){
-			var file = paths[i];
-			file = nova.path.join(this.pathScripts, file);
-			
-			//console.log("file=%s",file);
-			const fst = nova.fs.stat(file);
-			if(!fst || fst.isDirectory()) continue;
-			this.toolAdd(file);
-		}
-		
+		return [];
 	},
 	installExtension: function(){
 		
@@ -266,85 +102,48 @@ var exwTools = {
 		
 		
 	},
-	init: function(){
-		
-		this.disposables = new CompositeDisposable();
-		
-		const pStore = nova.extension.globalStoragePath;
-		this.pathScripts = nova.path.join(pStore, 'tools');
-		
-		if (!nova.fs.access(this.pathScripts, nova.fs.F_OK)) {
-	
-			this.installExtension();
-		}
-		
-		this.tools.items = new Map();
-		
-		this.loadTools();
-		
-		nova.commands.register("expw_tools.reload", () => {
-			this.loadTools();
+	addRootItem: function(entry){
+		this.rootItems.push(entry);
+	},
+	folderReload: function(entry){
+		if(!this.treeView) return;
+		if(entry){
+			this.treeView.reload(entry);
+		}else{
 			this.treeView.reload();
-		});
-		
-		nova.commands.register("expw_tools.add", () => {
-			const pathTplScript = nova.path.join(nova.extension.path, 'assets', "template.js");
-			
-			nova.workspace.showInputPalette("Enter a name for the new tool", {value:"Untitled.js"}, (fname) => {
-				if(!fname || fname.length == 0) return;
-				
-				const newFile = nova.path.join(this.pathScripts, fname);
-				nova.fs.copy(pathTplScript, newFile);
-				
-				nova.workspace.openFile(newFile);
-			});
-		});
-		
-		nova.commands.register("expw_tools.doubleClick", () => {
-			// Invoked when an item is double-clicked
-			let selection = this.treeView.selection;
-			if(!selection || selection.length == 0) return;
-			
-			const e = selection[0];
-			console.log("contextValue \"%s\".", e.contextValue);
-			if(e.contextValue == "tool"){
-				this.toolRun(e.__uid);
-			}else if(e.contextValue == "cmd_reveal_tools"){
-				helper.revealInFinder(this.pathScripts);
-			}
-		});
-		
-		nova.commands.register("expw_tools.edit", () => {
-			const pathTplScript = nova.path.join(nova.extension.path, 'assets');
-			
-			let selection = this.treeView.selection;
-			if(!selection || selection.length == 0) return;
-			
-			const e = selection[0];
-			
-			if(e.contextValue == "tool"){
-				nova.workspace.openFile(e.__source_path);
+		}
+	},
+	treeSelection: function(){
+		if(!this.treeView) return null;
+		return this.treeView.selection;
+	},
+	cmdNewFile: function(path){
+		nova.workspace.showInputPalette("Enter file name", {value:"file.php"}, (name) => {
+			if(!name || name.length == 0) return;
+			const newFile = nova.path.join(path, name);
+			const fst = nova.fs.stat(newFile);
+			if(fst){
+				ide.showAlert('A file named "' + name + '" already exists at this location.');
+				return;
 			}
 			
+			ide.writeFile(newFile, "");
 			
+			nova.workspace.openFile(newFile);
 		});
-		nova.commands.register("expw_tools.showInFinder", () => {
-			const pathTplScript = nova.path.join(nova.extension.path, 'assets');
-			
-			let selection = this.treeView.selection;
-			if(!selection || selection.length == 0) return;
-			
-			const e = selection[0];
-			
-			if(e.contextValue == "tool"){
-				helper.revealInFinder(e.__source_path);
-				//nova.fs.reveal(e.__source_path); //leaves finder in a weird states
-			}
-		});
+	},
+	init: function(){
+	
+		ide.init(); //helper to interact with Nova
 		
+		this.ide = ide;
+		
+		this.initScripts();
+		this.initProjects();
+		this.initSymbols();
 		
 		// Create the TreeView
-		this.treeView = new TreeView("expw_tools", {
+		this.treeView = new TreeView("expw_prj", {
 			dataProvider: this
 		});
 		
@@ -354,28 +153,141 @@ var exwTools = {
 		
 		nova.subscriptions.add(this.treeView);
 		
-		this.disposables.add( nova.workspace.onDidAddTextEditor((aTextEditor)=>{
-			if(!aTextEditor.document) return;
+		nova.commands.register("expw_prj.add", () => {
 			
-			var toolEdited = null;
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
 			
-			this.disposables.add( aTextEditor.onDidSave( (editor)=> {
+			const e = selection[0];
+			if(e.uid == "fld_projects"){
+				this.prjController.newProject();
+			}else if(e.type == "fsd"){
+				if(!e.hasOwnProperty("path") || !e.path) return;
 				
-				let path = editor.document.path;
+				this.cmdNewFile(e.path);
+			}else if(e.uid == "fld_act_project"){
+				this.prjController.addProjectPath();
+			}else if(e.uid == "fld_tools"){
+				this.scriptsController.newScript();
 				
-				for([uid, tool] of this.tools.items){
-					if(tool.__source_path == path){
-						this.toolAdd(tool.__source_path);
-					}else if(tool.onSave){
-						tool.onSave(path, editor);
-					}
-				}
-					
-			}));
-		}));
-	
-	
+			}
+		
+		});
+		nova.commands.register("expw_prj.reload", () => {
+			
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
+			
+			const e = selection[0];
+			if(e.uid == "fld_projects"){
+				
+				this.folderReload(e);
+			}else if(e.type == "fsd"){
+				if(!e.hasOwnProperty("path") || !e.path) return;
+				this.folderReload(e);
+			}else if(e.uid == "fld_act_project"){
+				this.folderReload(e);
+			}else if(e.uid == "fld_symbols"){
+				this.symController.populateSymbols();
+				this.folderReload(e);
+			}else if(e.uid == "fld_tools"){
+				this.scriptsController.onReload();
+				
+				this.folderReload(e);
+			}
+			
+		});
+		
+		nova.commands.register("expw_prj.doubleClick", () => {
+			// Invoked when an item is double-clicked
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
+			
+			const e = selection[0];
+			
+			if(e.controller){
+				e.controller.onDoubleClick(e);
+			}
+		
+		});
+		
+		nova.commands.register("expw_prj.edit", () => {
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
+			
+			const e = selection[0];
+			
+			if(e.hasOwnProperty("path") && e.path){
+				nova.workspace.openFile(e.path);
+			}
+		});
+		
+		nova.commands.register("expw_prj.copyPath", () => {
+			
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
+			
+			const e = selection[0];
+			
+			if(e.hasOwnProperty("path") && e.path){
+				nova.clipboard.writeText(e.path);
+			}
+		});
+		nova.commands.register("expw_prj.showInFinder", () => {
+			
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
+			
+			const e = selection[0];
+			
+			if(e.hasOwnProperty("path") && e.path){
+				ide.revealInFinder(e.path);
+				//nova.fs.reveal(e.__source_path); //leaves finder in a weird states
+			}
+		});
+		
+		nova.commands.register("expw_prj.newFile", () => {
+			
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
+			
+			const e = selection[0];
+			if(e.type != "fsd" || !e.hasOwnProperty("path") || !e.path) return;
+			
+			this.cmdNewFile(e.path);
+			
+			
+		});
+		
 		console.log("@Done");
+	},
+	initSymbols: function(){
+		const { controller } = require('./lib/symbols.js');
+		this.symController = controller;
+		controller.onInit(this);
+	},
+	initProjects: function(){
+		const { controller } = require('./lib/projects.js');
+		this.prjController = controller;
+		controller.onInit(this);
+		
+	},
+	initScripts: function(){
+		
+		const { controller } = require('./lib/scripts.js');
+		this.scriptsController = controller;
+		//controller.pathScripts =  nova.path.join(nova.extension.globalStoragePath, 'tools') );
+		
+		
+		//if (!nova.fs.access(this.pathScripts, nova.fs.F_OK)) {
+		//	this.installExtension();
+		//}
+		
+		controller.onInit(this);	
+		
+		
+	
+		
 	},
 	
 };

@@ -1,36 +1,83 @@
 # Tools #
 
-**Tools** adds a repository of quick commands to automate tasks. Similar to Nova's Tasks but in **Tools** you can create simple js scripts and have them handy in a Sidebar. Tools are not associated to a workspace/project like tasks, nor are they tied to a build-run cycle, they are simple scripts that you can run as needed.
+This extension adds a sidebar to the [Nova](https://panic.com/nova) editor with a couple of Tools to help you make your day better!. 
 
-Tools are vanilla js scripts that are saved in the folder `~/Library/Application Support/Nova/Extensions/EXPW.Tools/tools/`.
 
-# Usage #
+## Tasks ##
+Create your own repository of quick commands to automate tasks in vanilla js. Tasks are not associated to a workspace/project like Nova's tasks, nor are they tied to a build-run cycle, they are simple scripts that you can run as needed or even trigger them when a document is saved.
 
-This extensions add a new sidebar that you can access from the sidebar panel in Nova. The sidebar will list all the tools that you create or install. A tool is a vanilla js script that you can use to automate tasks in Nova. The sidebar will show a basic set of icons on its tool bar to add, edit and refresh your tools.
 
-## Create a Tool ##
+## Project ##
 
-To create a tool press the plus icon on the Tools's sidebar. This will open a new js document in Nova with the template code of a tool skeleton.
+A notion of *projects* without *projects*! Quickly create a named project and associate multiple folders instead of a single folder. Browse the contents of your project right from the same Sidebar.
+
+To create a project simply right click on the *Project* folder and select "New Project..." from the context menu. Use "Open Project..." to activate the project. Use "Add path to project..." to add a folder(s) to your project. When you select the **Project** folder you can also use the "Add" button to create a project.
+
+For when your tab bar is out of control (always!) you can also view your Open Tabs and navigate to your open files...
+
+## Code Browser ##
+
+Navigate your code right on the sidebar. Similar to Nova's Symbols you can quickly view your hierarchy of classes and functions. You can add markers to your code and access them from the code browser.
+
+Your source code is parsed using grammar definitions that can easily be modified to accommodate your needs. The first time this extension is used a default grammar is placed in the file `~/Library/Application Support/Nova/Extensions/EXPW.Tools/symbols.js`. Open this file to make your modifications and relaunch Nova. The default config includes grammar for *JS*, *PHP*, *CSS* and *C*.
+
+You can add special markers in your code, for example bookmarks, to-do reminders or even add meta entries.
+
+```js
+//MARK: Swift style...
+//#MARK My comment here...
+//#TODO Review this function
+```
+
+Markers use the syntax of single line comments for the given source code language. For example in css we would use:
+
+```css
+/* #MARK My comment here... */
+```
+
+![A screenshot](images/screenshot.png)
+
+
+**NOTE**
+
+This is an attempt to port my Atom's extensions to Nova. This extension is undergoing a lot of work and may have a lot of rough edges. 
+
+## Requirements
+
+This is a vanilla extension and does not require any additional software. 
+
+
+# Task Scripts #
+
+The sidebar will display a **Tasks** folder which lists all the tasks that you have created or install. 
+
+A task is a vanilla javascript that you can use to automate tasks in Nova. 
+
+The sidebar will show a basic set of icons on its tool bar to add, edit and refresh your tools.
+
+## Create a Task ##
+
+Select the **Tasks** folder and press the "Plus" button to create a new task. This will open a new js document in Nova with the template code of a tool skeleton.
 
 You can also edit the contents of the folder `~/Library/Application Support/Nova/Extensions/EXPW.Tools/tools/` and add your own js file manually.
 
 > If you get a tool script from somebody else, check the source code and only install scripts you obtained from a trusted source.
 
-Use the refresh button on the sidebar to reload the tools from the file system.
+> Select the **Tasks** folder and press the "Refresh" to reload changes made directly in the file system.
 
-## Edit a Tool ##
+## Edit a Task ##
 
-Select a tool and press the pencil icon on the sidebar to edit your tool. When you save your tool the changes are automatically reloaded.
+Select a task and press the pencil icon on the sidebar to edit your task. When you save your task the changes are automatically reloaded.
 
-## Running a Tool ##
+## Running a Task ##
 
-Double click a tool to run it.
+Double click a task to run it.
 
-## Anatomy of a Tool ##
+## Anatomy of a task ##
 
-A tool is a vanilla js object with some required properties and functions.
+A task is a vanilla javascript object with some required properties and functions.
 
-The basic structure of a tool is:
+The basic structure of a task is:
 ```JS
 tool = {
 id:"hellotool",
@@ -40,92 +87,80 @@ name: "Hello World",
 }
 ```
 
-The following properties are available in the tool object:
+> The script must assign the task object to a `tool` variable.
+
+The following properties are available in the task object:
 
 | Key | Description |
 | --- | --- |
 | id | String, A unique identifier for your tool. |
 | name | String, A human readable name for the tool. |
-| onAction | Function, A hook that will be executed when the user double clicks on the tool or it is executed from a menu.<br><br>Parameters: none. |
-| onSave | Function, A hook that will be executed when the user saves a document in Nova.<br><br>Parameter:<br>`path` String with the file path.<br>`editor` Instance of the [TextEditor](https://docs.nova.app/api-reference/text-editor/). |
+| tooltip | String, A brief description of the tool for humans. |
+| onAction | Function<br>Signature: `function()`<br><br>A hook that will be executed when the user double clicks on the tool or it is executed from a menu.<br><br>Parameters: none. |
+| onSave | Function<br>Signature: `function(path, textEditor)`<br><br>A hook that will be executed when the user saves a document in Nova.<br><br>Parameter:<br>`path` String with the file path.<br>`textEditor` Instance of [TextEditor](https://docs.nova.app/api-reference/text-editor/). |
 
 
-## Writing a tool script ##
+## Writing a task script ##
 
-Basic tools are invoked when the user double clicks the tool on the sidebar. This type of tool implements the `onAction` hook.
+Basic task is invoked when the user double clicks the entry on the sidebar. This type of task implements the `onAction` hook.
 
-The `onAction` hook is a property of our tool object whose value is a function. Inside our function we write our code.
+The `onAction` hook is a property of our task object whose value is a function. Inside our hook function we write our code.
 
-When automating a task you may optionally implement the `onSave` hook. This function will be called automatically whenever Nova saves a document. This functions takes two arguments a string with the `path` of the file and the `editor` with the instance of the [TextEditor](https://docs.nova.app/api-reference/text-editor/).
+When automating a task you may optionally implement the `onSave` hook. This function will be called automatically whenever Nova saves a document. This functions takes two arguments a string with the `path` of the file and the `textEditor` with the instance of the [TextEditor](https://docs.nova.app/api-reference/text-editor/).
 
 In your code you have access to Nova's [API](https://docs.nova.app/api-reference) in addition we provide a simple helper with common tasks.
 
-### Helper ###
+## Helpers ##
 
-`helper.file_path`
+This extension adds some JS objects to help you create quick tasks without having to dive into Nova's [API](https://docs.nova.app/api-reference).
 
-String with the absolute path of the active editor or file in scope.
-
-`helper.file_name`
-
-String with the file name of the active editor or file in scope.
-
-`helper.file_extension`
-
-String with the file extension of the active editor or file in scope.
+The `ide` object provides a set of functionality to interact with NOVA and the filesystem. This object is available globally in your script.
 
 
-`helper.revealInFinder( aPath )`
+`ide.revealInFinder( aPath )`
 
 Reveals the file or folder given in `aPath`.
 
-`helper.readFile( aPath )`
+`ide.readFile( aPath )`
 
 Returns a string with the contents of a file given in the absolute path `aPath` or `null` if unable to read the file.
 
-`helper.isPathOpen(aPath, workspace)`
+`ide.isPathOpen(aPath, workspace)`
 
 Returns true if the absolute path in `aPath` is currently open in Nova.
 
-`helper.editor`
+`ide.showAlert(msg)`
 
-This is a proxy object with some functionality to interact with the active editor.
-
-`helper.editor.path`
-
-String property with the path to the document open on the editor.
-
-`helper.editor.filename`
-
-String property with the file name of the document open on the editor.
-
-`helper.editor.directory`
-
-String property with the directory of the document open on the editor.
-
-`helper.editor.textEditor`
-
-The instance of the active [TextEditor](https://docs.nova.app/api-reference/text-editor/).
+Displays an alert with the given message in the string `msg`.
 
 
-`helper.editor.getSelectedText()`
+### Editor ###
 
-Function that returns the text selected.
+The `editor` object is a helper that simplifies interaction and common tasks related to a [TextEditor](https://docs.nova.app/api-reference/text-editor/). This object is available globally in your script.
 
-`helper.editor.insertText(text)`
+| Properties |
+| --- |
+| `editor.syntax`<br><br>String property with the syntax of the editor. |
+| `editor.path`<br><br>String property with the path to the document open or null. |
+| `editor.filename`<br><br>String property with the file name of the document open or null. |
+| `editor.directory`<br><br>String property with the directory of the document open or null. |
+| `editor.textEditor`<br><br>The instance of the active [TextEditor](https://docs.nova.app/api-reference/text-editor/). |
 
-Insert the string given in `text` in the current insertion point. If the editor had a selection it will be replaced.
+| Methods |
+| --- |
+| `editor.getSelectedText()`<br><br>Returns the selected text. |
+| `editor.insertText(text)`<br><br>Insert the string given in `text` in the current insertion point. If the editor had a selection it will be replaced. |
+| `editor.insertSnippet(text)`<br><br>Insert the string given in `text` in the current insertion point as a [snippet](https://docs.nova.app/extensions/snippets/). If the editor had a selection it will be replaced. |
+| `editor.save()`<br><br>Save the text editor contents. |
 
-`helper.editor.insertSnippet(text)`
 
-Insert the string given in `text` in the current insertion point as a [snippet](https://docs.nova.app/extensions/snippets/). If the editor had a selection it will be replaced.
+### Process ###
 
-`helper.editor.save()`
+Nova provides a [process](https://docs.nova.app/api-reference/process/) object that you can use to run shell commands among others.
 
-Save the text editor contents. 
+Alternatively we provide the `ide.process(cmd, args)` function to simplify executing shell commands.
 
-`helper.process(cmd, args)`
-
+`ide.process(cmd, args)`
 Creates a process in a shell for the `command` with the arguments in the array `args` (string array).
 
 The process is an event emitter with the following events:
@@ -152,7 +187,7 @@ Properties:
 | Method | Description |
 | --- | --- |
 | `pid` | Readonly The process PID. |
-| `cwd` | The current working directory. Can be set anytime before you call `run()`. |
+| `cwd` | The current working directory. Can be set anytime before you call `run()`. The default value of `cwd` is the folder of the active TextEditor or the home folder of the user. |
 | `shell` | If `true` then `/bin/sh` is used, else set to a string with the path to the desired shell. Can be set anytime before you call `run()`. |
 | `results` | String. The output of the command received in StdOut. |
 | `stdErr` | String. The output of the command received in StdErr. |
@@ -162,7 +197,7 @@ Example 1:
 
 ```js
 //use async/await to wait for process to run...
-onSave: async function(path, editor){
+onSave: async function(path, textEditor){
 	const p = helper.process("ls", ["-la", path]);
 	await p.run();
 	console.log("out=%s", p.results);
@@ -171,7 +206,7 @@ onSave: async function(path, editor){
 
 Example 2:
 ```js
-onSave: function(path, editor){
+onSave: function(path, textEditor){
 	console.log("Saving files 2 %s", path);
 	
 	const p = helper.process("ls", ["-la", path]);
@@ -190,7 +225,7 @@ onSave: function(path, editor){
 
 ```js
 //use promise...
-onSave: function(path, editor){
+onSave: function(path, textEditor){
 	const p = helper.process("ls", ["-la", path]);
 	p.run().then((data)=>{
 		console.log("out=%s", data);
@@ -210,20 +245,19 @@ onAction:function(){
 }
 ```
 
-2. To get the active [editor](https://docs.nova.app/api-reference/text-editor/):
+2. To get the active [TextEditor](https://docs.nova.app/api-reference/text-editor/):
 
 ```js
 onAction:function(){
-	let editor = nova.workspace.activeTextEditor;
-	if(!editor) return;
+	
+	//using wrapper
+	let textEditor1 = editor.textEditor; 
+	
+	//using Nova's API
+	let textEditor2 = nova.workspace.activeTextEditor;
+	if(!textEditor2) return;
 }
 ```
 
-3. Check Nova's [process](https://docs.nova.app/api-reference/process/) object for more options running shell commands.
-
-
-## Requirements
-
-Tools is a vanilla extension and does not require any additional software. 
 
 

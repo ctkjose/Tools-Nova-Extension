@@ -3,39 +3,343 @@ Helper Utilities to interact with Nova
 
 **/
 
-exports.revealInFinder = function(path){
-	try {
-		const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", path]});
-		p.start();
-	}catch(err){
-		console.log("[EXPW][TOOLS][ERROR] Unable to reveal \"%s\".", path);
+
+var objSerializer = exports.objSerializer = function(objIn, ops){
+	//serialize plain objects
+	var visited = [];
+	var ignoreKeys = [];
+	
+	var ic = 0;
+	let ident = (e)=>{
+		var s = "";
+		for(let i=1; i<=ic; i++) s+= "\t";
+		return s + e;	
+	};
+	if(ops && ops.ignoreKeys && Array.isArray(ops.ignoreKeys)){
+		ignoreKeys.push.apply(ignoreKeys, ops.ignoreKeys);
 	}
-}
-exports.getConfig = function (key, type) {
-	if(nova.workspace.config.get(key) != null) return nova.workspace.config.get(key, type);
-	return nova.config.get(key, type)
-}
-exports.readFile = function(path){
-	if (!nova.fs.access(path, nova.fs.R_OK)) return null
-	try {
-		const lines = nova.fs.open(path).readlines();
-		return lines.length > 0 ? lines.join('\n') : null
-	}catch(ex){
-		console.log("[EXPW][TOOLS] ERROR failed to read \"%s\".", path);
-		return "";
+	
+	
+	let getValue = (v) => {
+		let t = typeof(v);
+		
+		var out = "";
+		
+		if(t=="undefined"){
+			return "undefined";
+		}else if(t=="number"){
+			return v.toString();
+		}else if(t=="string"){
+			return JSON.stringify(v);
+		}else if(t=="function"){
+			return v.toString();
+		}else if(t=="object"){
+			if(v === null){
+				return "null";
+			}else if(Array.isArray(v)){
+				return serializeArray(v);
+			}else{
+				console.log("\tSerialize Obj=================");
+				return serialize(v);
+			}
+		}else{
+			return "null";
+		}
+	
+		
+	};
+	
+	let serializeArray = (a) => {
+		var out = [];
+		
+		ic++;
+		for(let v of a){
+			out.push(ident(getValue(v)));
+		}
+		ic--;
+		
+		return "[\n" + out.join(",\n") + "\n" + ident("]");
+	};
+	
+	let serialize = (obj) => {
+		
+		if(Array.isArray(obj)){
+			return serializeArray(obj);
+		}
+		if(obj === null){
+			return "null";
+		}
+		
+		
+		//if(visited.indexOf(obj) >= 0){
+		//	return "null";
+		//}
+		//visited.push(obj);
+		
+		let keys = 	Object.keys(obj);
+		
+		ic++;
+		var out = [];
+		var e = "";
+		
+		const regex = /^[A-Z_$][A-Z0-9_$]*$/im;
+		
+		for(let k of keys){
+			//console.log("Key %s", k);
+			if(ignoreKeys.indexOf(k) >= 0) continue;
+			
+			if ((m = regex.exec(k)) === null) {
+				e = '"' + k + '":';
+			}else{
+				e = k + ":";
+			}
+			
+			e = e + getValue(obj[k]);
+			
+			out.push(ident(e));
+		}
+		
+		ic--;
+		return "{\n" + out.join(",\n") + "\n" + ident("}");
+	};
+	
+	return serialize(objIn);
+};
+
+
+var ide = exports.ide = {
+	emitter:null,
+	disposables: null,
+	data: {}, //document data
+	
+	lastActive: null,
+	timerCheckActive: null,
+	
+	initActiveEditorTracking: function(){
+		this.timerCheckActive = setInterval(()=>{
+			if( nova.workspace.activeTextEditor != this.lastActive){
+				if(this.lastActive) this.emitter.emit('doc-blur', this.lastActive);
+				
+				this.lastActive = nova.workspace.activeTextEditor;
+				this.emitter.emit('doc-focus', this.lastActive);
+				
+			}
+			
+			
+		}, 200);
+	},
+	init: function(){
+		this.emitter = new Emitter();
+		this.disposables = new CompositeDisposable();
+		
+		this.initActiveEditorTracking();
+		
+
+		this.disposables.add( nova.workspace.onDidAddTextEditor((aTextEditor)=>{
+			if(!aTextEditor) return;
+			
+			let editor = aTextEditor;
+			
+			this.emitter.emit('doc-added', editor);
+			this.handleEditorChange(editor);
+			this.disposables.add( editor.onDidSave( (editor)=> {
+				this.handleEditorSave(editor);				
+			}));
+			
+			this.disposables.add( editor.onDidDestroy( (editor)=> {
+				this.emitter.emit('doc-destroyed', editor );			
+			}));
+			
+			
+			this.disposables.add( editor.document.onDidChangeSyntax( (doc, syntax)=> {
+				this.emitter.emit('doc-syntax-changed', editor, syntax);
+				console.log("Syntax Changed %s")			
+			}));
+		}));
+	},
+	createID: function(){
+		const id = Math.random().toString(16).slice(2).toUpperCase() + '-' + Date.now().toString();
+		return id;
+	},
+	setKey: function(k, v){
+		this.data[k] = v;
+	},
+	getKey: function(k, defaultValue){
+		if(this.data.hasOwnProperty(k)){
+			return this.data[k];	
+		}
+		return defaultValue;
+	},
+	hasKey: function(k){
+		return this.data.hasOwnProperty(k);
+	},
+	dispose: function(){
+		clearInterval(this.timerCheckActive);
+		this.disposables.dispose();
+	},
+	handleEditorChange: function(editor){
+		this.emitter.emit('doc-changed', editor);
+	},
+	handleEditorSave: function(editor){
+		this.emitter.emit('doc-saved', editor);
+	},
+	showAlert: function(msg){
+		nova.workspace.showInformativeMessage(msg);
+	},
+	showNotification: function (title, message){
+		const request = new NotificationRequest(this.createID());
+		
+		request.title = title;
+		request.body = message;
+		
+		console.log(message);
+		nova.notifications.add(request);
+	},
+	imageForExtension: function(ext){
+		switch(ext){
+			case "png":
+			case "jpg":
+			case "svg":
+			case "bmp":
+			case "gif":
+				return "file-img";
+				break;
+			case "html":
+			case "htm":
+				return "file-html";
+				break;
+			case "php":
+			case "sphp":
+				return "file-php";
+				break;
+			case "c":
+			case "m":
+				return "file-c";
+				break;
+			case "cpp":
+				return "file-cpp";
+				break;
+			case "css":
+				return "file-css";
+				break;
+			case "scss":
+				return "file-sass";
+				break;
+			case "less":
+				return "file-less";
+				break;
+			case "js":
+				return "file-js";
+				break;
+			case "json":
+				return "file-json";
+				break;
+			case "md":
+				return "file-md";
+				break;
+			case "swift":
+				return "file-swift";
+				break;
+		}
+		
+		return "file";
+	},
+	on: function(eventName, fn){
+		ide.emitter.on(eventName, fn);
+	},
+	revealInFinder: function(path){
+		try {
+			const p = new Process("/usr/bin/open", {"shell":true, "args":["-R", path]});
+			p.start();
+		}catch(err){
+			console.log("[EXPW][TOOLS][ERROR] Unable to reveal \"%s\".", path);
+		}
+	},
+	getConfig: function (key, type) {
+		if(nova.workspace.config.get(key) != null) return nova.workspace.config.get(key, type);
+		return nova.config.get(key, type)
+	},
+	writeFile: function(path, data){
+		var file = nova.fs.open(path, "w", "utf8");
+		if (!nova.fs.access(path, nova.fs.W_OK)) return false;
+		if(file){
+			file.write(data, "utf8");
+		}
+		file.close();
+		
+		return true;
+	},
+	readFile: function(path){
+		if (!nova.fs.access(path, nova.fs.R_OK)) return null
+		try {
+			const lines = nova.fs.open(path).readlines();
+			return lines.length > 0 ? lines.join('\n') : null
+		}catch(ex){
+			console.log("[EXPW][TOOLS] ERROR failed to read \"%s\".", path);
+			return "";
+		}
+	},
+	isPathOpen: function(path, workspace) {
+		workspace = workspace || nova.workspace;
+		const relative = workspace.relativizePath(path);
+		return relative !== path && !relative.startsWith('../')
 	}
+};
+
+
+
+
+
+ide.getFileInfo = function(path){
+	
+	var f = {
+		name:"",
+		path: path,
+		ext: "",
+		exists: false,
+		isDirectory: false,
+		isWritable: false,
+		isReadable: false,
+		isSymbolicLink: false,
+		isExecutable:false,
+		icon: "file",
+		mode: "",
+		size: 0,
+	};
+	
+	//console.log("listing %s", path);
+	f.name = nova.path.basename(path);
+	f.ext = f.name.substr(f.name.lastIndexOf('.') + 1).toLowerCase();
+	
+	
+	if (nova.fs.access(path, nova.fs.F_OK)) {
+		f.exists = true;
+	}
+	if (nova.fs.access(path, nova.fs.R_OK)) {
+		f.isReadable = true;
+	}
+	if (nova.fs.access(path, nova.fs.W_OK)) {
+		f.isWritable = true;
+	}
+	if (nova.fs.access(path, nova.fs.X_OK)) {
+		f.isExecutable = true;
+	}
+	
+	const fst = nova.fs.stat(path);
+	if(fst){
+		f.size = fst.size;
+		f.mode = fst.mode;
+		f.isDirectory = fst.isDirectory();
+		f.isSymbolicLink = fst.isSymbolicLink();
+	}
+	
+	if(f.isDirectory){
+		f.icon = "folder-color";
+	}else{
+		f.icon = this.imageForExtension(f.ext);
+	}
+	return f;
 }
-exports.isPathOpen = function (path, workspace) {
-	workspace = workspace || nova.workspace;
-	const relative = workspace.relativizePath(path);
-	return relative !== path && !relative.startsWith('../')
-}
-
-
-var shell = exports.shell = {};
-
-var shell_cwd = nova.path.expanduser("~/");
-
 
 exports.refresh = ()=> {
 	var tEditor = null;
@@ -51,79 +355,18 @@ exports.refresh = ()=> {
 	}
 };
 
-var _shell_cwd = null;
-Object.defineProperty(shell, 'cwd', {
-	enumerable: true, configurable: false,
-	get(){
-		if(_shell_cwd) return _shell_cwd;
-		
-		let editor = nova.workspace.activeTextEditor;
-		if(!editor) return "";
-		if(!editor.document){
-			if(nova.workspace.path) return nova.workspace.path;
-			return nova.path.expanduser("~/");
-		}
+ide.process = function(cmd, params){
+	var options = {
+		args: params,
+		cwd: "",
+		shell: true
+	};
 	
-		return nova.path.dirname(editor.document.path);
-	}, set(value){
-		_shell_cwd = value;
+	options.cwd = nova.path.expanduser("~/");
+	let textEditor = nova.workspace.activeTextEditor;
+	if(textEditor  && textEditor.document){
+		options.cwd = nova.path.dirname(textEditor.document.path);
 	}
-});
-
-
-
-
-async function syncExecute(cmd, params){
-	var options = {
-		args: params,
-		cwd: shell.cwd,
-		shell: true
-		//stdio: ["pipe", "pipe", "pipe"],
-	};
-	
-	var p = new Process(cmd, options);
-	
-	var results = "";
-	p.onStdout( (line) => {
-		console.log("line %s",line);
-		results += line + "\n";
-	});
-	
-	
-	
-	
-	function execSync(){
-		
-	 	const promise = new Promise( (resolve, reject) => {
-			p.onDidExit((status)=>{
-				console.log("Process done Exit Value=%d\n%s", status, results);
-				if(status==0){
-					resolve(results);
-				}else{
-					reject(results);
-				}
-			});
-			p.start();
-		});
-		
-		return promise;
-	}; 
-	
-	let v = await execSync();
-	
-	console.log("Leaving");
-	
-	return results;
-};
-
-shell.execute = syncExecute;
-
-exports.process = function(cmd, params){
-	var options = {
-		args: params,
-		cwd: shell.cwd,
-		shell: true
-	};
 	
 	let emitter = new Emitter();
 	
@@ -215,6 +458,31 @@ exports.process = function(cmd, params){
 	
 var editor = {};
 
+Object.defineProperty(editor, 'text', {
+	enumerable: true, configurable: false,
+	get(){
+		let editor = nova.workspace.activeTextEditor;
+		if(!editor) return "";
+		let d = editor.document;
+		
+		if( !d || d.isEmpty ) return "";
+		
+		return d.getTextInRange(new Range(0, d.length));
+	}, set(v){
+		
+		
+	}
+});
+
+Object.defineProperty(editor, 'syntax', {
+	enumerable: true, configurable: false,
+	get(){
+		let editor = nova.workspace.activeTextEditor;
+		if(!editor) return "";
+		
+		return editor.document.syntax;
+	}
+});
 Object.defineProperty(editor, 'path', {
 	enumerable: true, configurable: false,
 	get(){
@@ -269,7 +537,7 @@ editor.insertText = function(text){
 
 editor.insertSnippet = function(string){
 	let editor = nova.workspace.activeTextEditor;
-	if(!editor) return;
+	if(!editor) return; 
 	
 	editor.insert(string, InsertTextFormat.Snippet);
 };
@@ -277,7 +545,14 @@ editor.save = function(){
 	let editor = nova.workspace.activeTextEditor;
 	if(!editor) return;
 	
-	editor.save();
+	editor.save(); 
 };
+
+Object.defineProperty(ide, 'editor', {
+	enumerable: true, configurable: false,
+	get(){
+		return editor;
+	}
+});
 
 exports.editor = editor;
