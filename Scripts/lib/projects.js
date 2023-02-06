@@ -299,7 +299,7 @@ var controller = {
 		if( entry.uid == "fld_projects"){
 			let actPrjUid = nova.workspace.config.get("expw_prj.prj.active");
 			
-			out.push(this.openTabsEntry);
+			//out.push(this.openTabsEntry);
 			
 			for(let uid of Object.keys(this.commandsEntries)){
 				out.push(this.commandsEntries[uid]);
@@ -374,7 +374,7 @@ var controller = {
 			isActionable: false, //can we double click on it...
 		};
 		
-		plugin.addRootItem( this.rootEntry );
+		
 		
 		
 		this.openTabsEntry = {
@@ -388,7 +388,11 @@ var controller = {
 			isFolder: true,
 			isEditable: false,
 			isActionable: true,
-		};	
+		};
+		
+		
+		plugin.addRootItem( this.openTabsEntry );
+		plugin.addRootItem( this.rootEntry );
 		
 		//this.commandsEntries[ openTabsEntry.uid ] = openTabsEntry;
 		

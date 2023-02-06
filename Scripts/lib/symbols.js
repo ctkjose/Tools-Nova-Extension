@@ -395,7 +395,7 @@ var controller = {
 	parser: exwSymbolParser,
 	
 	populateSymbols: function(){
-		let syntax = ide.editor.syntax.toLowerCase();
+		let syntax = (ide.editor.syntax || "").toLowerCase();
 		//ide.showAlert("syntax=" + syntax);
 		
 		this.rootEntry.children = [];
@@ -511,6 +511,10 @@ var controller = {
 	onDoubleClick: function(entry){
 		if(!entry) return;
 		
+		let ide = this.plugin.ide;
+		if(entry.type == "fld_symbols"){
+			this.populateSymbols(ide.editor.textEditor);
+		}
 		if(entry.type == "sym"){
 			if(entry.editor){
 				entry.editor.moveToTop();
@@ -560,27 +564,29 @@ var controller = {
 			icon: "object",
 			isFolder: true,
 			isEditable: false, //can we show edit menu
-			isActionable: false, //can we double click on it...
+			isActionable: true, //can we double click on it...
 			
 			children:[]
 		};
 		
+		
+		
 		plugin.addRootItem( this.rootEntry );
 		
+		/*
 		plugin.ide.on("doc-saved", (textEditor)=>{
-				
 			this.populateSymbols(textEditor);
 		});
 		
 		plugin.ide.on("doc-focus", (textEditor)=>{
-				
+			this.populateSymbols(textEditor);	
+		});
+		*/
+		
+		plugin.ide.on("doc-syntax-changed", (textEditor)=>{
 			this.populateSymbols(textEditor);
 		});
 		
-		plugin.ide.on("doc-syntax-changed", (textEditor)=>{
-				
-			this.populateSymbols(textEditor);
-		});
 	}
 };
 

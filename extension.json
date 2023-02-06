@@ -53,6 +53,11 @@
                     ],
                     "contextCommands": [
                         {
+                            "title": "Refresh Symbols",
+                            "command": "expw_prj.refreshsymbols",
+                            "when": "(viewItem == 'fld_symbols')"
+                        },
+                        {
                             "title": "Edit",
                             "command": "expw_prj.edit",
                             "when": "(viewItem == 'tool') || (viewItem == 'fs')"

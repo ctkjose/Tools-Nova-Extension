@@ -17,6 +17,8 @@ For when your tab bar is out of control (always!) you can also view your Open Ta
 
 ## Code Browser ##
 
+**IMPORTANT** Im currently debugging an issue with symbol parsing that may delay saving files.
+
 Navigate your code right on the sidebar. Similar to Nova's Symbols you can quickly view your hierarchy of classes and functions. You can add markers to your code and access them from the code browser.
 
 Your source code is parsed using grammar definitions that can easily be modified to accommodate your needs. The first time this extension is used a default grammar is placed in the file `~/Library/Application Support/Nova/Extensions/EXPW.Tools/symbols.js`. Open this file to make your modifications and relaunch Nova. The default config includes grammar for *JS*, *PHP*, *CSS* and *C*.
@@ -38,11 +40,23 @@ Markers use the syntax of single line comments for the given source code languag
 ![A screenshot](https://raw.githubusercontent.com/ctkjose/Tools-Nova-Extension/main/Images/screenshot.png)
 
 
-**NOTE**
+# This project is free! # 
+
+Yeap is free, but if you feel grateful please consider helping with one of these: 
+
+Donate to our local non-profit [Rescate de Playas Punta Borinquen](https://rescateplayasborinquen.org) a great cause conserving and protecting costal resources in the Caribbean.
+
+[![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen?style=for-the-badge)](https://offset.earth/treeware?gift-trees)
+
+Help reforestation efforts [buy the planet a Tree](https://offset.earth/treeware?gift-trees)...
+
+Read more about Treeware at [treeware.earth](http://treeware.earth)
+
+# NOTE #
 
 This is an attempt to port my Atom's extensions to Nova. This extension is undergoing a lot of work and may have a lot of rough edges. 
 
-## Requirements
+# Requirements #
 
 This is a vanilla extension and does not require any additional software. 
 
@@ -121,18 +135,92 @@ The `ide` object provides a set of functionality to interact with NOVA and the f
 
 Reveals the file or folder given in `aPath`.
 
+`ide.openFile( aPath )`
+
+Opens the document referenced in `aPath` in Nova. If already open it will be activated.
+
 `ide.readFile( aPath )`
 
 Returns a string with the contents of a file given in the absolute path `aPath` or `null` if unable to read the file.
 
-`ide.isPathOpen(aPath, workspace)`
+`ide.writeFile: function(path, data)`
+
+Writes the contents of `data` to the specified path. Returns `true` on success else it returns `false`.
+
+`ide.readJSON( aPath )`
+
+On success it returns the parsed JSON data (object/array) of the file given in `aPath`, else `null` is returned.
+
+`ide.isPathOpen( aPath )`
 
 Returns true if the absolute path in `aPath` is currently open in Nova.
+
+`ide.isPathInWorkspace( aPath, workspace )`
+
+Returns true if the path in `aPath` is part of the active workspace. When the parameter `workspace` is not provided the current workspace is checked, else the [Workspace](https://docs.nova.app/api-reference/workspace/) instance passed in `workspace` is used.
+
+`ide.getTextEditorForPath(aPath)`
+
+Returns the [TextEditor](https://docs.nova.app/api-reference/text-editor/) for the absolute path given in `aPath` if the document is currently open in Nova.
+
+`ide.showNotification(title, msg)`
+
+Shows a passive notification to the user. Where `title` is a string with the notification title, and `msg` is a string with the notifications body.
 
 `ide.showAlert(msg)`
 
 Displays an alert with the given message in the string `msg`.
 
+`ide.interpolate(sIn, values)` 
+
+Performs variable substitution on the string given in `sIn`. The parameter `sIn` may also be an array of strings. You may optionally pass a plain object of key-value pairs with additional variables to replace.
+
+Built-In Variables:
+
+<div style="padding-left: 45px;">
+`${userHome}` - the path of the user's home folder.<br>
+`${workspaceFolder}` - the path of the project folder..<br>
+`${file}` - the current opened file.<br>
+`${relativeFile}` - the current opened file relative to workspaceFolder.<br>
+`${relativeFileDirname}` - the current opened file's dirname relative to `workspaceFolder`.<br>
+`${fileBasename}` - the current opened file's basename.<br>
+`${fileBasenameNoExtension}` - the current opened file's basename with no file extension.<br>
+`${fileDirname}` - the current opened file's dirname.<br>
+`${fileExtname}` - the current opened file's extension.<br>
+</div>
+
+`ide.on(event, callback)`
+
+Register a callback for an event.
+
+| Event | Description |
+| --- | --- |
+| `doc-added` | A TextEditor was created. Arguments:<br>`textEditor` The instance of the TextEditor. |
+| `doc-destroyed` | A TextEditor was close. Arguments:<br>`textEditor` The instance of the TextEditor. |
+| `doc-changed` | The contents of a TextEditor changed. Arguments:<br>`textEditor` The instance of the TextEditor. |
+| `doc-saved` | A TextEditor was saved. Arguments:<br>`textEditor` The instance of the TextEditor. |
+| `doc-syntax-changed` | The syntax of a TextEditor changed. Arguments:<br>`textEditor` The instance of the TextEditor.<br>`syntax` The name of the syntax. |
+
+
+`ide.getFileInfo(path)`
+
+Returns a plain object with related information about a filesystem path. The returned object has the following keys:
+
+```js
+{
+	name,
+	path,
+	dirName,
+	ext,
+	exists,
+	isDirectory,
+	isWritable,
+	isReadable,
+	isSymbolicLink,
+	isExecutable,
+	icon, mode, size
+};
+```
 
 ### Editor ###
 

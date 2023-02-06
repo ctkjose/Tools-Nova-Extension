@@ -259,6 +259,10 @@ var ide = exports.ide = {
 		if(nova.workspace.config.get(key) != null) return nova.workspace.config.get(key, type);
 		return nova.config.get(key, type)
 	},
+	openFile: function(path){
+		path = nova.path.normalize(path);
+		nova.workspace.openFile(path);
+	},
 	writeFile: function(path, data){
 		var file = nova.fs.open(path, "w", "utf8");
 		if (!nova.fs.access(path, nova.fs.W_OK)) return false;
@@ -270,6 +274,8 @@ var ide = exports.ide = {
 		return true;
 	},
 	readFile: function(path){
+		path = nova.path.normalize(path);
+		
 		if (!nova.fs.access(path, nova.fs.R_OK)) return null
 		try {
 			const lines = nova.fs.open(path).readlines();
@@ -279,10 +285,75 @@ var ide = exports.ide = {
 			return "";
 		}
 	},
-	isPathOpen: function(path, workspace) {
+	readJSON: function(path) {
+		path = nova.path.normalize(path);
+	    if (!nova.fs.access(path, nova.fs.R_OK)) return null
+	  
+	  	const lines = nova.fs.open(path).readlines();
+	  	return lines.length > 0 ? JSON.parse(lines.join('\n')) : null;
+	},
+	
+	isPathInWorkspace: function(path, workspace) {
+		path = nova.path.normalize(path);
 		workspace = workspace || nova.workspace;
+		
 		const relative = workspace.relativizePath(path);
-		return relative !== path && !relative.startsWith('../')
+		return relative !== path && !relative.startsWith('../');
+	},
+	
+	isPathOpen: function(path) {
+		path = nova.path.normalize(path);
+		
+		return nova.workspace.textEditors.some(e => e.document.path === path);
+	},
+	
+	getTextEditorForPath: function (path) {
+	  path = nova.path.normalize(path);
+	  return nova.workspace.textEditors.find(e => e.document.path === path);
+	},
+	interpolate: function(sIn, data){
+		
+		let path = (this.editor.path || "");
+		let dir = (nova.path.dirname(path) || "");
+		
+		var values = {
+			userHome: nova.path.expanduser("~/"),
+			workspaceFolder: ( nova.workspace.path | dir ),
+			file: path,
+			fileBasename: nova.path.basename(path),
+			fileDirname: dir,
+			pathSeparator: '/',
+		};
+		
+		const ext = values.fileBasename.substr(values.fileBasename.lastIndexOf('.') + 1);
+		
+		values.fileExtname = ext.toLowerCase();
+		values.fileBasenameNoExtension = values.fileBasename.replace("." + ext, "");
+		values.relativeFile = nova.path.relative(path, value.workspaceFolder);
+		values.relativeFileDirname = nova.path.relative(dir, value.workspaceFolder);
+		
+		if(!data) data = {};
+		let convert = (s)=>{
+			var out = s;	
+			for(let k of Object.keys(values)){
+				out = out.replace("${" + k + "}", values[k]);
+			}
+			for(let k of Object.keys(data)){
+				out = out.replace("${" + k + "}", data[k]);
+			}
+			return out;
+		};
+		
+		if(Array.isArray(sIn)){
+			var out = [];
+			for(let s of sIn){
+				out.push(convert(s));	
+			}
+			return out;
+		}else{
+			return convert(sIn);
+		}
+		
 	}
 };
 
@@ -297,6 +368,7 @@ ide.getFileInfo = function(path){
 		path: path,
 		ext: "",
 		exists: false,
+		dirName: (nova.path.dirname(path) || ""),
 		isDirectory: false,
 		isWritable: false,
 		isReadable: false,

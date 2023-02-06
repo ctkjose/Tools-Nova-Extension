@@ -153,6 +153,12 @@ var plugin = {
 		
 		nova.subscriptions.add(this.treeView);
 		
+		nova.commands.register("expw_prj.refreshsymbols", () => {
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
+			
+			this.symController.populateSymbols(ide.editor.textEditor);
+		});
 		nova.commands.register("expw_prj.add", () => {
 			
 			let selection = this.treeSelection();
