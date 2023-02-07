@@ -1,3 +1,8 @@
+# Version 1.2.1 #
+
+Addressing issue in Nova 10.5/6 where parsing symbols during save would cause script to timeout.
+
+
 # Tools #
 
 This extension adds a sidebar to the [Nova](https://panic.com/nova) editor with a couple of Tools to help you make your day better!. 

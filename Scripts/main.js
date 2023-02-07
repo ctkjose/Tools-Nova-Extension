@@ -265,6 +265,7 @@ var plugin = {
 			
 		});
 		
+		
 		console.log("@Done");
 	},
 	initSymbols: function(){

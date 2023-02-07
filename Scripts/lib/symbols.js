@@ -573,15 +573,18 @@ var controller = {
 		
 		plugin.addRootItem( this.rootEntry );
 		
-		/*
 		plugin.ide.on("doc-saved", (textEditor)=>{
-			this.populateSymbols(textEditor);
+			setTimeout(()=>{
+				this.populateSymbols(textEditor);
+			}, 10);
+			
 		});
+		
 		
 		plugin.ide.on("doc-focus", (textEditor)=>{
 			this.populateSymbols(textEditor);	
 		});
-		*/
+	
 		
 		plugin.ide.on("doc-syntax-changed", (textEditor)=>{
 			this.populateSymbols(textEditor);
