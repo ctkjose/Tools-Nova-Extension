@@ -1,3 +1,10 @@
+# Version 1.2.2 #
+
+The code browser was removed due to errors in Nova 10.5/6. The functionality was converted to Markers.
+
+PS: Im working on alternative Tree-Sitter Languages for PHP, JS and CSS/SASS.
+
+
 # Version 1.2.1 #
 
 Addressing issue in Nova 10.5/6 where parsing symbols during save would cause script to timeout.

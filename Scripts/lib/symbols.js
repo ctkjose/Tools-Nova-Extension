@@ -55,6 +55,143 @@ var exwSymbolParser = {
 		return new RegExp('^\\s*' + s);
 	},
 	parse: function(grammerId, src){
+		if(!this.grammers.hasOwnProperty(grammerId)){
+			console.log("EXW-IDE:SymbolParser:Grammer not implemented [%s]", grammerId)
+			return null;
+		}
+		
+		var state = {
+			line_idx: -1,
+			position: -1,
+			grammer: this.grammers[grammerId],
+			lines: [],
+			marks: [],
+			items:[],
+			depth: 0,
+		};
+		
+		var lines = src.split(/\r?\n|\r/);
+		var findMark = (e, marks) => {
+			var def, r, re, m, i, reIdx;
+		
+			var item = {
+				title:'',
+				icon:'nst-icn-mark',
+				point: {row: state.line_idx, column: state.position},
+				attr: {class:[]},
+				items:[],
+				type:'marker-ln',
+				symType: 'marker',
+			};
+		
+			//console.log("LN[%d][%s]", item.row, e.text);
+			e.item = null;
+			for(var i in marks){
+				def = marks[i];
+		
+				m = def.re.exec(e.text);
+				if(!m) continue;
+		
+				item.title = (m[1]) ? m[1] : m[0];
+				if(def.hasOwnProperty('reIdx')){
+					//console.log("reIdx=%d", def.reIdx);
+					if(def.reIdx == -1){
+						item.title = m[m.length-1];
+					}else if(typeof m[def.reIdx] === 'undefined'){
+						item.title = m[def.reIdx];
+					}
+				}
+		
+		
+				if(def.exclude){
+					for(var j in def.exclude){
+						let re = def.exclude[j];
+						if( re.test(item.title)){
+							//console.log("exclude matched %s %s", item.title, re.source);
+							m = undefined;
+							break;
+						}
+					}
+					if(!m) continue;
+				}
+		
+		
+				e.def = def;
+				e.isBlock = def.block;
+				e.type = def.type;
+		
+				if(def.symType){
+					item.symType = def.symType;
+				}
+				if(def.icon){
+					item.icon = def.icon;
+				}
+				if(def.title){
+					//console.log('setting title from %s to %s', item.title, def.title);
+					item.title = def.title;
+				}
+				if(def.class){
+					if(Array.isArray(def.class)){
+						item.attr.class = item.attr.class.concat(def.class);
+					}else if(typeof(def.class) == "string"){
+						item.attr.class.push(def.class);
+					}
+				}
+				if(def.attr){
+					let keys = Object.keys(def.attr);
+					for(let ak of keys ){
+						if(ak=='class') continue;
+						item.attr[ak] = def.attr[ak];
+					}
+				}
+		
+				if(state.grammer.factory){
+					//factory(lineState, mark)
+					state.grammer.factory.apply(this, [e, item]);
+				}
+		
+				if(def.when){
+					parent = (nesting.current || {title: root, symType: 'root', attr:[], icon:'', items:[]});
+					if(!def.when(item, parent)) continue;
+				}
+		
+				e.item = item;
+				break;
+			}
+		};
+
+		var s = '';
+		for(var i = 0; i< lines.length; i++ ){
+			s = lines[i];
+			state.line_idx++;
+			if(/^\s*$/.exec(s)) continue;
+			
+			var e = {line: state.line_idx, text:s, is_pragma:false, isBlock: false, type:'', def:null };
+			
+			var flgIsPragma = null;
+			if(state.grammer.pragma){
+				for(let pEntry of state.grammer.pragma){
+					m = pEntry.re.exec(s);
+					if(m){
+						flgIsPragma = pEntry;
+						break;
+					} 
+				}
+				
+				if(flgIsPragma){
+					findMark(e, [flgIsPragma]);
+					
+					if(e.item){
+						state.items.push(e.item);
+					}
+					continue;
+				}
+			}
+		}
+		
+		return state;
+	},
+	parse1: function(grammerId, src){
 
 		if(!this.grammers.hasOwnProperty(grammerId)){
 			console.log("EXW-IDE:SymbolParser:Grammer not implemented [%s]", grammerId)
@@ -557,8 +694,8 @@ var controller = {
 		this.rootEntry = {
 			type: "fld_symbols",
 			uid: "fld_symbols", 
-			name: "Code",
-			tooltip: "Code browser...",
+			name: "Markers",
+			tooltip: "Code markers...",
 			controller: this,
 			
 			icon: "object",
@@ -577,7 +714,6 @@ var controller = {
 			setTimeout(()=>{
 				this.populateSymbols(textEditor);
 			}, 10);
-			
 		});
 		
 		

@@ -20,13 +20,7 @@ To create a project simply right click on the *Project* folder and select "New P
 
 For when your tab bar is out of control (always!) you can also view your Open Tabs and navigate to your open files...
 
-## Code Browser ##
-
-**IMPORTANT** Im currently debugging an issue with symbol parsing that may delay saving files.
-
-Navigate your code right on the sidebar. Similar to Nova's Symbols you can quickly view your hierarchy of classes and functions. You can add markers to your code and access them from the code browser.
-
-Your source code is parsed using grammar definitions that can easily be modified to accommodate your needs. The first time this extension is used a default grammar is placed in the file `~/Library/Application Support/Nova/Extensions/EXPW.Tools/symbols.js`. Open this file to make your modifications and relaunch Nova. The default config includes grammar for *JS*, *PHP*, *CSS* and *C*.
+## Markers ##
 
 You can add special markers in your code, for example bookmarks, to-do reminders or even add meta entries.
 
@@ -36,11 +30,13 @@ You can add special markers in your code, for example bookmarks, to-do reminders
 //#TODO Review this function
 ```
 
-Markers use the syntax of single line comments for the given source code language. For example in css we would use:
+Markers use the syntax of single line comments for the given source code language.  For example in css we would use:
 
 ```css
 /* #MARK My comment here... */
 ```
+
+This plugin ships with markers for PHP, JavaScript and CSS.
 
 ![A screenshot](https://raw.githubusercontent.com/ctkjose/Tools-Nova-Extension/main/Images/screenshot.png)
 
