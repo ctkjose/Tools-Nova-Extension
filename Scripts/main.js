@@ -154,10 +154,10 @@ var plugin = {
 		nova.subscriptions.add(this.treeView);
 		
 		nova.commands.register("expw_prj.refreshsymbols", () => {
-			let selection = this.treeSelection();
-			if(!selection || selection.length == 0) return;
+			//let selection = this.treeSelection();
+			//if(!selection || selection.length == 0) return;
 			
-			this.symController.populateSymbols(ide.editor.textEditor);
+			//this.symController.populateSymbols(ide.editor.textEditor);
 		});
 		nova.commands.register("expw_prj.add", () => {
 			
@@ -194,8 +194,8 @@ var plugin = {
 			}else if(e.uid == "fld_act_project"){
 				this.folderReload(e);
 			}else if(e.uid == "fld_symbols"){
-				this.symController.populateSymbols();
-				this.folderReload(e);
+				//this.symController.populateSymbols();
+				//this.folderReload(e);
 			}else if(e.uid == "fld_tools"){
 				this.scriptsController.onReload();
 				
@@ -269,9 +269,9 @@ var plugin = {
 		console.log("@Done");
 	},
 	initSymbols: function(){
-		const { controller } = require('./lib/symbols.js');
-		this.symController = controller;
-		controller.onInit(this);
+		//const { controller } = require('./lib/symbols.js');
+		//this.symController = controller;
+		//controller.onInit(this);
 	},
 	initProjects: function(){
 		const { controller } = require('./lib/projects.js');

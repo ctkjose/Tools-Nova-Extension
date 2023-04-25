@@ -1,3 +1,12 @@
+# Version 1.2.3 #
+
+The code browser was completely removed. 
+
+I recommend [Dennis Advance PHP Language](https://github.com/dennisosaj/advancedphp.novaextension) extension which addressed limitations in Nova's builtin language.
+
+I also sent Nova recommendations to improve JS Tree-Sitter language. If interested I can share my JS language extension.
+
+
 # Version 1.2.2 #
 
 The code browser was removed due to errors in Nova 10.5/6. The functionality was converted to Markers.

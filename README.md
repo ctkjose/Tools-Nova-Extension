@@ -1,8 +1,3 @@
-# Version 1.2.1 #
-
-Addressing issue in Nova 10.5/6 where parsing symbols during save would cause script to timeout.
-
-
 # Tools #
 
 This extension adds a sidebar to the [Nova](https://panic.com/nova) editor with a couple of Tools to help you make your day better!. 
@@ -19,26 +14,6 @@ A notion of *projects* without *projects*! Quickly create a named project and as
 To create a project simply right click on the *Project* folder and select "New Project..." from the context menu. Use "Open Project..." to activate the project. Use "Add path to project..." to add a folder(s) to your project. When you select the **Project** folder you can also use the "Add" button to create a project.
 
 For when your tab bar is out of control (always!) you can also view your Open Tabs and navigate to your open files...
-
-## Markers ##
-
-You can add special markers in your code, for example bookmarks, to-do reminders or even add meta entries.
-
-```js
-//MARK: Swift style...
-//#MARK My comment here...
-//#TODO Review this function
-```
-
-Markers use the syntax of single line comments for the given source code language.  For example in css we would use:
-
-```css
-/* #MARK My comment here... */
-```
-
-This plugin ships with markers for PHP, JavaScript and CSS.
-
-![A screenshot](https://raw.githubusercontent.com/ctkjose/Tools-Nova-Extension/main/Images/screenshot.png)
 
 
 # This project is free! # 
