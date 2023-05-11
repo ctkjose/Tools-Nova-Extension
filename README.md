@@ -2,18 +2,31 @@
 
 This extension adds a sidebar to the [Nova](https://panic.com/nova) editor with a couple of Tools to help you make your day better!. 
 
-
 ## Tasks ##
-Create your own repository of quick commands to automate tasks in vanilla js. Tasks are not associated to a workspace/project like Nova's tasks, nor are they tied to a build-run cycle, they are simple scripts that you can run as needed or even trigger them when a document is saved.
+Create your own repository of quick commands in vanilla js to automate tasks. Tasks are not associated to a workspace/project like Nova's tasks, nor are they tied to a build-run cycle, they are simple scripts that you can run as needed or even trigger them when a document is saved.
 
+**Warning**: Use of Async/Await in tasks will cause Nova to become unstable and hang.
 
 ## Project ##
 
-A notion of *projects* without *projects*! Quickly create a named project and associate multiple folders instead of a single folder. Browse the contents of your project right from the same Sidebar.
+Allows you to group different folders into a named project. You can quickly open one of your named groups and browse the contents of your group right from the same Sidebar.
 
 To create a project simply right click on the *Project* folder and select "New Project..." from the context menu. Use "Open Project..." to activate the project. Use "Add path to project..." to add a folder(s) to your project. When you select the **Project** folder you can also use the "Add" button to create a project.
 
-For when your tab bar is out of control (always!) you can also view your Open Tabs and navigate to your open files...
+## Open Tabs ##
+When your tabs are out of control (always!) we added a "Open Tabs" folder that shows the tabs that are currently open...
+
+## Markers ##
+
+Mark sections of your code with special comments and quickly access these markers from the panel with just one click. 
+
+Markers can be created using pragma like comments and using Nova's bookmark comments.
+
+```js
+//#MARK My factories 
+//#TODO Refactor save code!
+/* !Class Methods */
+```
 
 
 # This project is free! # 

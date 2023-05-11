@@ -3,7 +3,7 @@
     "name": "Tools",
     "organization": "ExponentialWorks",
     "description": "Adds a sidebar that lets you create and access quick scripts to automate tasks with ease!",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "repository": "https://github.com/ctkjose/Tools-Nova-Extension",
     "bugs":"https://github.com/ctkjose/Tools-Nova-Extension/issues",
     "categories": ["sidebars"],
@@ -54,8 +54,8 @@
                     "contextCommands": [
                         {
                             "title": "Refresh Symbols",
-                            "command": "expw_prj.refreshsymbols",
-                            "when": "(viewItem == 'fld_symbols')"
+                            "command": "expw_prj.refreshmarkers",
+                            "when": "(viewItem == 'fld_markers')"
                         },
                         {
                             "title": "Edit",

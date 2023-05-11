@@ -1,3 +1,11 @@
+# Version 1.2.4 #
+
+New Markers functionality replaced the old code browser.
+
+Warning: Use of Async/Await in scripts will cause Nova to become unstable and hang.
+
+Other minor fixes...
+
 # Version 1.2.3 #
 
 The code browser was completely removed. 

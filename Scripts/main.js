@@ -1,7 +1,7 @@
 
 var treeView = null;
 
-
+//#MARK Jose
 String.prototype.replaceAll = function(search, replace) {
 	var string = this.toString(this);
  	return string.split(search).join(replace);
@@ -12,7 +12,7 @@ String.prototype.replaceAll = function(search, replace) {
 const { ide } = require('./lib/helper');
 
 
-
+/* !test jose26 */
 exports.activate = function() {
     // Do work when the extension is activated
     
@@ -41,7 +41,7 @@ var plugin = {
 	disposables:null,
 	_editingTool:null,
 	
-	symController:null,
+	markersController:null,
 	scriptsController:null,
 	prjController:null,
 	
@@ -134,13 +134,15 @@ var plugin = {
 	},
 	init: function(){
 	
+		console.log("tools.init");
+		
 		ide.init(); //helper to interact with Nova
 		
 		this.ide = ide;
 		
 		this.initScripts();
 		this.initProjects();
-		this.initSymbols();
+		this.initMarkers();
 		
 		// Create the TreeView
 		this.treeView = new TreeView("expw_prj", {
@@ -153,11 +155,11 @@ var plugin = {
 		
 		nova.subscriptions.add(this.treeView);
 		
-		nova.commands.register("expw_prj.refreshsymbols", () => {
-			//let selection = this.treeSelection();
-			//if(!selection || selection.length == 0) return;
+		nova.commands.register("expw_prj.refreshmarkers", () => {
+			let selection = this.treeSelection();
+			if(!selection || selection.length == 0) return;
 			
-			//this.symController.populateSymbols(ide.editor.textEditor);
+			this.markersController.populateMarks(ide.editor.textEditor);
 		});
 		nova.commands.register("expw_prj.add", () => {
 			
@@ -193,9 +195,9 @@ var plugin = {
 				this.folderReload(e);
 			}else if(e.uid == "fld_act_project"){
 				this.folderReload(e);
-			}else if(e.uid == "fld_symbols"){
-				//this.symController.populateSymbols();
-				//this.folderReload(e);
+			}else if(e.uid == "fld_makers"){
+				this.markersController.populateMarks();
+				this.folderReload(e);
 			}else if(e.uid == "fld_tools"){
 				this.scriptsController.onReload();
 				
@@ -268,10 +270,10 @@ var plugin = {
 		
 		console.log("@Done");
 	},
-	initSymbols: function(){
-		//const { controller } = require('./lib/symbols.js');
-		//this.symController = controller;
-		//controller.onInit(this);
+	initMarkers: function(){
+		const { controller } = require('./lib/markers.js');
+		this.markersController = controller;
+		controller.onInit(this);
 	},
 	initProjects: function(){
 		const { controller } = require('./lib/projects.js');

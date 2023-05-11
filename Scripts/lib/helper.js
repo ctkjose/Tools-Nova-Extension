@@ -142,9 +142,13 @@ var ide = exports.ide = {
 			
 			this.emitter.emit('doc-added', editor);
 			this.handleEditorChange(editor);
+			
+			//onSave
+			
 			this.disposables.add( editor.onDidSave( (editor)=> {
 				this.handleEditorSave(editor);				
 			}));
+			
 			
 			this.disposables.add( editor.onDidDestroy( (editor)=> {
 				this.emitter.emit('doc-destroyed', editor );			
